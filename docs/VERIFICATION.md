@@ -22,7 +22,8 @@
   - Integration tests with a PostgreSQL 16 service: **1 passed / 0 failed**.
   - Python structural checks and JavaScript syntax validation: passed.
   - `dotnet ef migrations has-pending-model-changes`: passed; model and snapshot are synchronized.
-- [ ] Browser UI acceptance, a full `docker compose up --build` smoke test and deployment-level security testing have not yet been performed. Do not claim these checks are completed.
+- [x] GitHub Actions run [39134911875](https://github.com/PADOALEX/PADO-StudioOps/actions/runs/39134911875) completed **successfully** with every gate green, including Docker Compose `up --build`, disposable PostgreSQL startup, `/health/ready`, frontend HTML response and Compose teardown.
+- [ ] Interactive browser acceptance (drag/drop, mobile layout, live login) and deployment-level security testing still require real-browser review. Do not claim these checks are completed.
 - [ ] Green integration tests and live browser acceptance remain release gates.
 
 Do not treat this as a green CI run. Resolve any build/migration/runtime issues revealed by a real SDK + PostgreSQL execution **before** calling the application release-ready or claiming successful deployment in a CV.

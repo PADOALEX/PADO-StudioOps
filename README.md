@@ -171,7 +171,7 @@ dotnet test tests/PADO.StudioOps.IntegrationTests -c Release
 node --check src/PADO.StudioOps.Api/wwwroot/js/board.js
 ```
 
-CI provisions a PostgreSQL 16 service and runs both test suites. The integration scenario tests anonymous denial, CSRF rejection, login, project creation, milestone creation, ticket persistence, status move, revision conflict, progress aggregation and developer project isolation. See `docs/VERIFICATION.md` for which checks have **actually** been run and what still requires SDK/Docker/GitHub Actions.
+CI provisions PostgreSQL 16, runs both test suites, checks EF Core migration drift, and builds and starts Docker Compose to smoke-test the API readiness endpoint and actual frontend HTML. The integration scenario tests anonymous denial, CSRF rejection, login, project creation, milestone creation, ticket persistence, status move, revision conflict, progress aggregation and developer project isolation. See `docs/VERIFICATION.md` for which checks have **actually** been run and what still requires SDK/Docker/GitHub Actions.
 
 For HTTPS deployments, configure `STUDIOOPS_COOKIE_SECURE=true` and serve the app through a trusted TLS reverse proxy. The local Docker HTTP demo intentionally uses request-dependent cookie security; it is **not** a hardened public deployment.
 
