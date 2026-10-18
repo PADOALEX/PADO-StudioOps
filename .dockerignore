@@ -1,0 +1,8 @@
+**/bin
+**/obj
+**/.git
+**/TestResults
+.env
+legacy-labs
+studioops_audit
+*.zip

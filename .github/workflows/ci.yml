@@ -1,0 +1,41 @@
+name: Build, test and inspect
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: studioops
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: studioops_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U studioops -d studioops_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      STUDIOOPS_TEST_DB: Host=localhost;Port=5432;Database=studioops_test;Username=studioops;Password=ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore PADO.StudioOps.slnx
+      - name: Build
+        run: dotnet build PADO.StudioOps.slnx --configuration Release --no-restore
+      - name: Unit tests
+        run: dotnet test tests/PADO.StudioOps.UnitTests/PADO.StudioOps.UnitTests.csproj --configuration Release --no-build
+      - name: Integration tests with real PostgreSQL
+        run: dotnet test tests/PADO.StudioOps.IntegrationTests/PADO.StudioOps.IntegrationTests.csproj --configuration Release --no-build
+      - name: Validate repository structure and JavaScript
+        run: python scripts/static_check.py

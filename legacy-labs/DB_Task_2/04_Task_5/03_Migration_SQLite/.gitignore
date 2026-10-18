@@ -1,0 +1,6 @@
+output/*.db
+output/*.sql
+output/*.txt
+output/postgres_export/
+__pycache__/
+*.pyc

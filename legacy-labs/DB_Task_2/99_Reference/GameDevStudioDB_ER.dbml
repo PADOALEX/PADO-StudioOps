@@ -1,0 +1,138 @@
+Table studios {
+  studio_id integer [pk, increment]
+  name varchar(100) [not null, unique]
+  country varchar(60) [not null]
+  founded_year smallint [not null]
+  website varchar(200)
+}
+
+Table employees {
+  employee_id integer [pk, increment]
+  studio_id integer
+  first_name varchar(50) [not null]
+  last_name varchar(50) [not null]
+  email varchar(120) [not null, unique]
+  position varchar(80) [not null]
+  hire_date date [not null]
+  salary numeric(12,2) [not null]
+}
+
+Table employee_profiles {
+  employee_id integer [pk]
+  birth_date date [not null]
+  phone varchar(30)
+  city varchar(80)
+  bio varchar(500)
+}
+
+Table game_projects {
+  project_id integer [pk, increment]
+  studio_id integer [not null]
+  project_lead_id integer
+  title varchar(120) [not null, unique]
+  genre varchar(60) [not null]
+  project_status varchar(30) [not null]
+  start_date date [not null]
+  planned_release_date date
+  budget numeric(14,2) [not null]
+  total_estimated_hours numeric(12,2)
+  task_completion_percent numeric(5,2)
+  derived_risk_level varchar(20)
+}
+
+Table milestones {
+  milestone_id integer [pk, increment]
+  project_id integer [not null]
+  name varchar(120) [not null]
+  due_date date [not null]
+  milestone_status varchar(30) [not null]
+}
+
+Table tasks {
+  task_id integer [pk, increment]
+  milestone_id integer [not null]
+  assigned_employee_id integer
+  title varchar(160) [not null]
+  priority varchar(20) [not null]
+  task_status varchar(30) [not null]
+  estimated_hours numeric(7,2) [not null]
+}
+
+Table technologies {
+  technology_id integer [pk, increment]
+  name varchar(100) [not null, unique]
+  category varchar(60) [not null]
+  version varchar(30)
+}
+
+Table game_builds {
+  build_id integer [pk, increment]
+  project_id integer [not null]
+  created_by_employee_id integer
+  version varchar(30) [not null]
+  platform varchar(40) [not null]
+  build_date timestamp [not null]
+  is_stable boolean [not null]
+}
+
+Table project_members {
+  project_id integer [not null]
+  employee_id integer [not null]
+  role_in_project varchar(80) [not null]
+  joined_at date [not null]
+
+  indexes {
+    (project_id, employee_id) [pk]
+  }
+}
+
+Table project_technologies {
+  project_id integer [not null]
+  technology_id integer [not null]
+  purpose varchar(120) [not null]
+
+  indexes {
+    (project_id, technology_id) [pk]
+  }
+}
+
+Ref: employees.studio_id > studios.studio_id [delete: set null]
+
+Ref: employee_profiles.employee_id - employees.employee_id [delete: cascade]
+
+Ref: game_projects.studio_id > studios.studio_id
+Ref: game_projects.project_lead_id > employees.employee_id [delete: set null]
+
+Ref: milestones.project_id > game_projects.project_id [delete: cascade]
+
+Ref: tasks.milestone_id > milestones.milestone_id [delete: cascade]
+Ref: tasks.assigned_employee_id > employees.employee_id [delete: set null]
+
+Ref: game_builds.project_id > game_projects.project_id [delete: cascade]
+Ref: game_builds.created_by_employee_id > employees.employee_id [delete: set null]
+
+Ref: project_members.project_id > game_projects.project_id [delete: cascade]
+Ref: project_members.employee_id > employees.employee_id
+
+Ref: project_technologies.project_id > game_projects.project_id [delete: cascade]
+Ref: project_technologies.technology_id > technologies.technology_id
+
+Table project_statistics {
+  project_id integer [pk]
+  project_title varchar(120) [not null]
+  studio_name varchar(100) [not null]
+  member_count integer [not null]
+  task_count integer [not null]
+  completed_task_count integer [not null]
+  delayed_milestone_count integer [not null]
+  total_estimated_hours numeric(12,2) [not null]
+  average_task_hours numeric(10,2) [not null]
+  completion_percent numeric(5,2) [not null]
+  stable_build_count integer [not null]
+  latest_build_date timestamp
+  budget_per_member numeric(14,2)
+  workload_level varchar(20) [not null]
+  calculated_at timestamp [not null]
+}
+
+Ref: project_statistics.project_id - game_projects.project_id [delete: cascade]

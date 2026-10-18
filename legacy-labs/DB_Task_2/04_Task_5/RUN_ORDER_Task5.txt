@@ -1,0 +1,30 @@
+TASK 5 — порядок запуску
+
+1. pgAdmin 4 (game_dev_studio_db):
+   15_1_setup_roles_and_view.sql
+   15_2_check_privileges.sql
+   15_3_reader_allowed.sql
+   15_4_reader_denied.sql        EXPECTED: permission denied
+   15_5_reset_role.sql           MUST be in same Query Tool as 15_3/15_4
+   15_6_editor_permissions.sql
+   15_7_assignee_view.sql
+   15_8_test_editor_transaction.sql (optional)
+
+2. VS Code terminal (Windows):
+   16_1_backup_postgres.cmd
+   16_2_restore_copy.cmd
+   pgAdmin: 16_5_verify_original.sql (original)
+   pgAdmin: 16_6_verify_restored_or_recovered.sql (restored copy)
+   pgAdmin: 16_3_simulate_data_loss_in_copy.sql (RESTORED COPY ONLY)
+   16_4_restore_recovered_copy.cmd
+   pgAdmin: 16_6_verify_restored_or_recovered.sql (recovered copy)
+
+3. VS Code terminal (in 04_Task_5/03_Migration_SQLite):
+   python -m pip install -r requirements.txt
+   python 17_export_postgres.py
+   python 18_import_sqlite.py
+   python 19_verify_sqlite.py
+   python 20_sqlite_queries.py
+
+Important: do not re-run the old 00/01 setup! Task 5 never drops
+or recreates game_dev_studio_db. See README_Task5.md for full details.

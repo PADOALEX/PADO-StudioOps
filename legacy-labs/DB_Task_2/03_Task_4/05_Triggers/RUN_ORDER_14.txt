@@ -1,0 +1,39 @@
+ЗАХИСТ TASK 4 — ТРИГЕРИ (пункти 4 і 5)
+
+Спочатку один раз виконай 09_task4_setup_and_triggers.sql з папки 01_Setup.
+Всі вісім файлів нижче запускай послідовно в ОДНОМУ Query Tool та в ОДНОМУ підключенні до game_dev_studio_db.
+Не закривай це вікно між файлами: транзакція, розпочата в 14_1, має залишатися активною аж до 14_8.
+
+1. 14_1_begin_insert_and_check.sql
+   Починає транзакцію; тимчасово очищає журнали аудиту; додає 3 задачі.
+   Data Output: 3 INSERT-записи ROW-trigger.
+
+2. 14_2_update_three_tasks.sql
+   Одним UPDATE змінює 3 задачі.
+   Messages: UPDATE 3.
+
+3. 14_3_check_update_row_trigger.sql
+   Data Output: 3 записи UPDATE, по одному для кожної задачі (FOR EACH ROW).
+
+4. 14_4_check_update_statement_trigger.sql
+   Data Output: 1 запис UPDATE, affected_rows = 3 (FOR EACH STATEMENT).
+
+5. 14_5_delete_three_tasks.sql
+   Одним DELETE видаляє 3 тестові задачі.
+   Messages: DELETE 3.
+
+6. 14_6_check_row_trigger_counts.sql
+   Data Output: INSERT = 3, UPDATE = 3, DELETE = 3 (для ROW-trigger).
+
+7. 14_7_check_statement_trigger_counts.sql
+   Data Output: UPDATE = 3 і DELETE = 3; усього 2 записи,
+   бо STATEMENT-trigger викликається один раз на один SQL-оператор.
+
+8. 14_8_rollback_and_verify.sql
+   ROLLBACK скасовує всі зміни цього тесту.
+   Data Output: demo_tasks_remaining = 0, якщо таких тестових задач не було перед запуском.
+
+ВАЖЛИВО: Натискай Execute окремо для кожного файлу, а не запускай усі разом.
+Для Task 4 isolation levels (12/13) як і раніше потрібні ДВА Query Tool.
+Якщо випадково закриєш Query Tool або виконаєш ROLLBACK до 14_8,
+почни з 14_1 заново.
