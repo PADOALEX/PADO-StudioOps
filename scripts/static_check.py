@@ -21,8 +21,8 @@ assert len(migration_files) == 1, 'Expected exactly one EF Core initial migratio
 migration = migration_files[0].read_text()
 expected = ['studios', 'employees', 'employee_profiles', 'game_projects', 'milestones', 'tasks', 'technologies', 'game_builds', 'project_members', 'project_technologies', 'app_users']
 for name in expected:
-    sql = re.search(r'CREATE TABLE\\s+' + name + r'\\s*\\(', migration)
-    ef = re.search(r'CreateTable\\(\\s*name:\\s*"' + name + r'"', migration)
+    sql = re.search(r'CREATE TABLE\s+' + name + r'\s*\(', migration)
+    ef = re.search(r'CreateTable\(\s*name:\s*"' + name + r'"', migration)
     assert sql or ef, f'Missing migration table: {name}'
 print('Initial migration creates all 11 tables')
 for file in project.rglob('*.cs'):
