@@ -16,11 +16,15 @@ js = project / 'wwwroot/js/board.js'
 subprocess.run(['node', '--check', str(js)], check=True)
 print('JS syntax OK')
 
-migration = (project / 'Data/Migrations/202610180001_InitialStudioOps.cs').read_text()
+migration_files = list((project / 'Data/Migrations').glob('*_InitialStudioOps.cs'))
+assert len(migration_files) == 1, 'Expected exactly one EF Core initial migration'
+migration = migration_files[0].read_text()
 expected = ['studios', 'employees', 'employee_profiles', 'game_projects', 'milestones', 'tasks', 'technologies', 'game_builds', 'project_members', 'project_technologies', 'app_users']
 for name in expected:
-    assert re.search(r'CREATE TABLE ' + name + r'\s*\(', migration), name
-print('Migration contains all 11 tables')
+    sql = re.search(r'CREATE TABLE\\s+' + name + r'\\s*\\(', migration)
+    ef = re.search(r'CreateTable\\(\\s*name:\\s*"' + name + r'"', migration)
+    assert sql or ef, f'Missing migration table: {name}'
+print('Initial migration creates all 11 tables')
 for file in project.rglob('*.cs'):
     text = file.read_text()
     assert 'DROP SCHEMA' not in text, file
