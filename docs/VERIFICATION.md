@@ -16,7 +16,13 @@
 - [ ] Live browser E2E, production security scan and screenshots — require a running app.
 - [x] Initial GitHub Actions run 39132792422: restore/build and 10 unit tests passed; integration test exposed missing startup configuration.
 - [x] EF Core migration and immutable model snapshot regenerated with the official `dotnet ef` tool on GitHub Actions. The baseline includes eleven tables, check constraints, FKs and indexes.
-- [ ] Confirm that the final GitHub Actions run passes every step after regeneration.
+- [x] GitHub Actions run [39134647312](https://github.com/PADOALEX/PADO-StudioOps/actions/runs/39134647312) on 2026-10-18 completed **successfully**:
+  - .NET Release build: **0 errors, 0 warnings**.
+  - Unit tests: **10 passed / 0 failed**.
+  - Integration tests with a PostgreSQL 16 service: **1 passed / 0 failed**.
+  - Python structural checks and JavaScript syntax validation: passed.
+  - `dotnet ef migrations has-pending-model-changes`: passed; model and snapshot are synchronized.
+- [ ] Browser UI acceptance, a full `docker compose up --build` smoke test and deployment-level security testing have not yet been performed. Do not claim these checks are completed.
 - [ ] Green integration tests and live browser acceptance remain release gates.
 
 Do not treat this as a green CI run. Resolve any build/migration/runtime issues revealed by a real SDK + PostgreSQL execution **before** calling the application release-ready or claiming successful deployment in a CV.
