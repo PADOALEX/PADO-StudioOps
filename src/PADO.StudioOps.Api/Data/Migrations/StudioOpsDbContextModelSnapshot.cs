@@ -12,6 +12,9 @@ public sealed class StudioOpsDbContextModelSnapshot : ModelSnapshot
 {
     protected override void BuildModel(ModelBuilder b)
     {
+        b.HasAnnotation("ProductVersion", "10.0.13");
+        b.HasAnnotation("Relational:MaxIdentifierLength", 63);
+        b.UseIdentityByDefaultColumns();
         b.Entity<Studio>(e => {
             e.ToTable("studios", t => t.HasCheckConstraint("ck_studios_founded_year", "founded_year BETWEEN 1970 AND 2100"));
             e.Property(x => x.Name).HasMaxLength(100).IsRequired(); e.HasIndex(x => x.Name).IsUnique().HasDatabaseName("ix_studios_name");
