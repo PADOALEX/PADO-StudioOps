@@ -63,6 +63,8 @@ public sealed class ApiFlowTests : IClassFixture<StudioOpsFactory>
             return await client.SendAsync(request);
         }
         Assert.True((await Send(HttpMethod.Post, "/api/auth/login", new { email = "ci-admin@studioops.test", password = "CI-only-complex-password-123!" })).IsSuccessStatusCode);
+        // The anonymous antiforgery token is not valid for an authenticated principal.
+        csrf = await RequireJson<CsrfResponse>(await client.GetAsync("/api/auth/csrf"));
         var unique = Guid.NewGuid().ToString("N")[..9];
         var studio = await RequireJson<StudioCreated>(await Send(HttpMethod.Post, "/api/studios", new { name = $"CI Studio {unique}", country = "Ukraine", foundedYear = 2026, website = (string?)null }));
         var employee = await RequireJson<EmployeeCreated>(await Send(HttpMethod.Post, "/api/employees", new { studioId = studio.StudioId, firstName = "CI", lastName = "Developer", email = $"dev-{unique}@ci.test", position = "Developer", hireDate = "2026-10-18", salary = 1000 }));
@@ -92,10 +94,11 @@ public sealed class ApiFlowTests : IClassFixture<StudioOpsFactory>
         devLogin.Headers.Add("X-CSRF-TOKEN", devCsrf.Token);
         devLogin.Content = JsonContent.Create(new { email = outsideEmail, password = "Dev-test-password-123!" });
         Assert.True((await devClient.SendAsync(devLogin)).IsSuccessStatusCode);
+        var authenticatedDevCsrf = await RequireJson<CsrfResponse>(await devClient.GetAsync("/api/auth/csrf"));
         Assert.Equal(HttpStatusCode.Forbidden, (await devClient.GetAsync($"/api/projects/{project.ProjectId}/tasks")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await devClient.GetAsync("/api/employees")).StatusCode);
         var devMove = new HttpRequestMessage(HttpMethod.Patch, $"/api/projects/{project.ProjectId}/tasks/{task.TaskId}/status");
-        devMove.Headers.Add("X-CSRF-TOKEN", devCsrf.Token);
+        devMove.Headers.Add("X-CSRF-TOKEN", authenticatedDevCsrf.Token);
         devMove.Content = JsonContent.Create(new { status = "To Do", revision = moved.Revision });
         Assert.Equal(HttpStatusCode.Forbidden, (await devClient.SendAsync(devMove)).StatusCode);
     }

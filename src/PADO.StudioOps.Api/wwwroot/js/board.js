@@ -22,7 +22,7 @@ async function api(path, options = {}) {
   const method = options.method || 'GET';
   const headers = { ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(method !== 'GET' ? { 'X-CSRF-TOKEN': state.csrf } : {}) };
   const res = await fetch(path, { ...options, method, headers, credentials: 'same-origin', cache: 'no-store' });
-  if (res.status === 401) { showLogin(); throw new Error('Your session has expired. Sign in again.'); }
+  if (res.status === 401) { showLogin(); await csrf(); throw new Error('Your session has expired. Sign in again.'); }
   if (!res.ok) { const error = await res.json().catch(() => ({})); throw new Error(error.error || error.title || `Request failed (${res.status})`); }
   return res.status === 204 ? null : res.json();
 }
@@ -265,7 +265,16 @@ $('logoutBtn').addEventListener('click', async () => { try { await api('/api/aut
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault(); const fd = new FormData(e.currentTarget); const btn = e.currentTarget.querySelector('button[type="submit"]');
   btn.disabled = true; $('loginError').hidden = true;
-  try { await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }) }); e.currentTarget.reset(); state.user = await api('/api/auth/me'); await startApp(); }
+  try {
+    // Antiforgery tokens are identity-bound: obtain an anonymous token to log in,
+    // then a fresh authenticated token before any subsequent POST/PATCH/DELETE.
+    await csrf();
+    await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }) });
+    await csrf();
+    e.currentTarget.reset();
+    state.user = await api('/api/auth/me');
+    await startApp();
+  }
   catch (err) { $('loginError').textContent = err.message; $('loginError').hidden = false; }
   finally { btn.disabled = false; }
 });
