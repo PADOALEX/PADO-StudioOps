@@ -14,7 +14,8 @@
 - [ ] EF migration applied to PostgreSQL — **PostgreSQL runtime not installed**.
 - [ ] `docker compose up --build` — **Docker not installed**.
 - [ ] Live browser E2E, production security scan and screenshots — require a running app.
-- [ ] GitHub Actions CI — requires pushing to a repository first.
+- [x] Initial GitHub Actions run 39132792422: restore/build and 10 unit tests passed; integration test exposed missing startup configuration. Fixes are submitted for CI re-validation.
+- [ ] Green integration tests and live browser acceptance remain release gates.
 
 Do not treat this as a green CI run. Resolve any build/migration/runtime issues revealed by a real SDK + PostgreSQL execution **before** calling the application release-ready or claiming successful deployment in a CV.
 

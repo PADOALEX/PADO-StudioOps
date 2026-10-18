@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
@@ -12,11 +13,15 @@ using PADO.StudioOps.Api.Security;
 using PADO.StudioOps.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-var connection = builder.Configuration.GetConnectionString("StudioOps");
-if (string.IsNullOrWhiteSpace(connection))
-    throw new InvalidOperationException("ConnectionStrings:StudioOps is required. Use environment variables or user-secrets.");
-
-builder.Services.AddDbContext<StudioOpsDbContext>(options => options.UseNpgsql(connection));
+// Resolve the final host configuration from DI. WebApplicationFactory supplies its
+// isolated test connection string after the entry point starts building the host.
+builder.Services.AddDbContext<StudioOpsDbContext>((services, options) =>
+{
+    var connection = services.GetRequiredService<IConfiguration>().GetConnectionString("StudioOps");
+    if (string.IsNullOrWhiteSpace(connection))
+        throw new InvalidOperationException("ConnectionStrings:StudioOps is required. Use environment variables or user-secrets.");
+    options.UseNpgsql(connection);
+});
 builder.Services.AddScoped<ProjectAccess>();
 builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
 builder.Services.AddProblemDetails();
@@ -32,6 +37,28 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     o.ExpireTimeSpan = TimeSpan.FromHours(8);
     o.Events.OnRedirectToLogin = ctx => { ctx.Response.StatusCode = 401; return Task.CompletedTask; };
     o.Events.OnRedirectToAccessDenied = ctx => { ctx.Response.StatusCode = 403; return Task.CompletedTask; };
+    // Revalidate each cookie against the active DB account to enforce deactivation,
+    // role changes and employee reassignment without waiting eight hours.
+    o.Events.OnValidatePrincipal = async ctx =>
+    {
+        var userId = ctx.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = ctx.Principal?.FindFirstValue(ClaimTypes.Role);
+        var employeeId = ctx.Principal?.FindFirstValue("employee_id");
+        var email = ctx.Principal?.FindFirstValue(ClaimTypes.Name);
+        var validId = int.TryParse(userId, out var id);
+        var current = validId
+            ? await ctx.HttpContext.RequestServices.GetRequiredService<StudioOpsDbContext>()
+                .AppUsers.AsNoTracking().Where(u => u.AppUserId == id)
+                .Select(u => new { u.IsActive, u.Role, u.EmployeeId, u.Email })
+                .FirstOrDefaultAsync(ctx.HttpContext.RequestAborted)
+            : null;
+        if (current is null || !current.IsActive || current.Role != role ||
+            current.EmployeeId?.ToString() != employeeId || current.Email != email)
+        {
+            ctx.RejectPrincipal();
+            await ctx.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        }
+    };
 });
 builder.Services.AddAuthorization(o => o.AddPolicy("AdminOnly", p => p.RequireRole("Admin")));
 builder.Services.AddRateLimiter(o =>

@@ -4,7 +4,7 @@
 
 ### Game Development Studio Management Platform
 
-**Production tracking · Team access · Real-time PostgreSQL-backed Kanban**
+**Production tracking · Team access · PostgreSQL-backed Kanban**
 
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square) ![EF Core](https://img.shields.io/badge/EF%20Core-10-4B32C3?style=flat-square) ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square)
 

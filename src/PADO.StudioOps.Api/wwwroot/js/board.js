@@ -15,6 +15,7 @@ const canManage = () => state.user?.role === 'Admin' || state.user?.role === 'Pr
 const isAdmin = () => state.user?.role === 'Admin';
 const canEdit = (task) => canManage() || (state.user?.role === 'Developer' && task.assignedEmployeeId === state.user.employeeId);
 let toastTimer;
+let refreshGeneration = 0;
 function toast(message) { const t = $('toast'); t.textContent = message; t.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('is-visible'), 3000); }
 async function csrf() { const res = await fetch('/api/auth/csrf', { credentials: 'same-origin', cache: 'no-store' }); if (!res.ok) throw new Error('Unable to initiate secure session.'); state.csrf = (await res.json()).token; }
 async function api(path, options = {}) {
@@ -42,11 +43,14 @@ async function loadProjects() {
   state.selected = state.projects.find((p) => p.projectId === before)?.projectId || state.projects[0]?.projectId || null;
   $('emptyView').hidden = Boolean(state.selected); $('projectContent').hidden = !state.selected;
   if (state.selected) { $('projectSelect').value = state.selected; await refreshProject(); }
-  else { state.tasks = []; state.milestones = []; state.members = []; state.overview = null; }
+  else { ++refreshGeneration; state.tasks = []; state.milestones = []; state.members = []; state.overview = null; }
   if (state.tab === 'admin') showTab('admin');
 }
 async function refreshProject() {
-  if (!state.selected || state.busy) return;
+  if (!state.selected) return;
+  // Each project selection starts a new generation. Old requests may finish,
+  // but must never overwrite a newer project's board or progress.
+  const generation = ++refreshGeneration;
   state.busy = true; $('refreshBtn').disabled = true;
   try {
     const id = state.selected;
@@ -54,7 +58,7 @@ async function refreshProject() {
       api(`/api/projects/${id}/tasks?sort=${encodeURIComponent($('sortSelect').value)}`),
       api(`/api/projects/${id}/milestones`), api(`/api/projects/${id}/members`), api(`/api/projects/${id}/overview`)
     ]);
-    if (state.selected !== id) return;
+    if (state.selected !== id || generation !== refreshGeneration) return;
     Object.assign(state, { tasks, milestones, members, overview });
     const project = state.projects.find((p) => p.projectId === id);
     $('projectTitle').textContent = project.title;
@@ -66,8 +70,8 @@ async function refreshProject() {
     $('metricMilestones').textContent = overview.openMilestones.length;
     $('progressBar').style.width = `${overview.completionPercent}%`;
     renderBoard(); renderMilestones(); renderTeam(); renderBuilds(); updatePermissions();
-  } catch (error) { toast(error.message); }
-  finally { state.busy = false; $('refreshBtn').disabled = false; }
+  } catch (error) { if (generation === refreshGeneration) toast(error.message); }
+  finally { if (generation === refreshGeneration) { state.busy = false; $('refreshBtn').disabled = false; } }
 }
 function updatePermissions() {
   for (const id of ['createMilestoneBtn', 'addMemberBtn', 'addBuildBtn']) $(id).hidden = !canManage();

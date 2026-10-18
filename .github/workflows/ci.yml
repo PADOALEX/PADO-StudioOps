@@ -23,10 +23,11 @@ jobs:
           --health-timeout 5s
           --health-retries 15
     env:
+      ConnectionStrings__StudioOps: Host=localhost;Port=5432;Database=studioops_test;Username=studioops;Password=ci-only-password
       STUDIOOPS_TEST_DB: Host=localhost;Port=5432;Database=studioops_test;Username=studioops;Password=ci-only-password
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
       - name: Restore
@@ -35,7 +36,7 @@ jobs:
         run: dotnet build PADO.StudioOps.slnx --configuration Release --no-restore
       - name: Unit tests
         run: dotnet test tests/PADO.StudioOps.UnitTests/PADO.StudioOps.UnitTests.csproj --configuration Release --no-build
-      - name: Integration tests with real PostgreSQL
-        run: dotnet test tests/PADO.StudioOps.IntegrationTests/PADO.StudioOps.IntegrationTests.csproj --configuration Release --no-build
       - name: Validate repository structure and JavaScript
         run: python scripts/static_check.py
+      - name: Integration tests with real PostgreSQL
+        run: dotnet test tests/PADO.StudioOps.IntegrationTests/PADO.StudioOps.IntegrationTests.csproj --configuration Release --no-build
