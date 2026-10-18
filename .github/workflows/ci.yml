@@ -44,3 +44,25 @@ jobs:
         run: |
           dotnet tool install --global dotnet-ef --version 10.0.13
           dotnet ef migrations has-pending-model-changes --project src/PADO.StudioOps.Api --startup-project src/PADO.StudioOps.Api
+      - name: Docker Compose full-stack smoke test
+        env:
+          POSTGRES_PASSWORD: ci-only-compose-db-password
+          STUDIOOPS_ADMIN_PASSWORD: ci-only-compose-admin-password-123!
+        run: |
+          docker compose up --build -d
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:8080/health/ready | grep -q '"ready"' &&
+               curl --fail --silent http://localhost:8080/ | grep -q 'PADO StudioOps'; then
+              echo "Docker Compose API and frontend are healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs --no-color
+          exit 1
+      - name: Tear down disposable Docker Compose stack
+        if: always()
+        env:
+          POSTGRES_PASSWORD: ci-only-compose-db-password
+          STUDIOOPS_ADMIN_PASSWORD: ci-only-compose-admin-password-123!
+        run: docker compose down -v --remove-orphans
