@@ -177,7 +177,7 @@ For HTTPS deployments, configure `STUDIOOPS_COOKIE_SECURE=true` and serve the ap
 
 ## Screenshots / demo
 
-Captured from the actual native .NET / PostgreSQL demo on 6 November 2026 with the repository's synthetic seed data. The local branch also fixes the asynchronous login-form reset and includes a regression check.
+Captured from the actual native .NET / PostgreSQL demo on 6 November 2026 with the repository's synthetic seed data. The asynchronous login-form reset is covered by a regression check.
 
 ![Administrator Kanban board](docs/screenshots/board.jpg)
 

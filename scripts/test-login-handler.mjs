@@ -3,8 +3,6 @@ import { readFileSync } from 'node:fs';
 import { Script, createContext } from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
-// Exercise the actual browser handler with the DOM event lifetime: currentTarget
-// is available during dispatch, then null while asynchronous login work resumes.
 const file = fileURLToPath(new URL('../src/PADO.StudioOps.Api/wwwroot/js/board.js', import.meta.url));
 const source = readFileSync(file, 'utf8');
 const begin = source.indexOf("$('loginForm').addEventListener('submit'");
