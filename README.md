@@ -177,7 +177,15 @@ For HTTPS deployments, configure `STUDIOOPS_COOKIE_SECURE=true` and serve the ap
 
 ## Screenshots / demo
 
-For a truthful portfolio screenshot, run the Docker demo and capture the board, project overview and milestones **from the actual running application**. Real screenshots are intentionally not fabricated in this repository.
+Captured from the actual native .NET / PostgreSQL demo on 6 November 2026 with the repository's synthetic seed data. The asynchronous login-form reset is covered by a regression check.
+
+![Administrator Kanban board](docs/screenshots/board.jpg)
+
+![Project overview and milestone](docs/screenshots/project-overview.jpg)
+
+![Developer view without the administration navigation](docs/screenshots/developer-view.jpg)
+
+The developer screenshot illustrates the UI role; backend membership and task ownership restrictions are verified by the PostgreSQL integration scenario. No production or private workspace is shown.
 
 ## Roadmap
 
