@@ -263,7 +263,7 @@ $('taskSearchInput').addEventListener('input', renderBoard); $('priorityFilter')
 $('sortSelect').addEventListener('change', refreshProject);
 $('logoutBtn').addEventListener('click', async () => { try { await api('/api/auth/logout', { method: 'POST' }); } catch (e) { toast(e.message); } showLogin(); await csrf().catch(() => {}); });
 $('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault(); const fd = new FormData(e.currentTarget); const btn = e.currentTarget.querySelector('button[type="submit"]');
+  e.preventDefault(); const form = e.currentTarget; const fd = new FormData(form); const btn = form.querySelector('button[type="submit"]');
   btn.disabled = true; $('loginError').hidden = true;
   try {
     // Antiforgery tokens are identity-bound: obtain an anonymous token to log in,
@@ -271,7 +271,7 @@ $('loginForm').addEventListener('submit', async (e) => {
     await csrf();
     await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }) });
     await csrf();
-    e.currentTarget.reset();
+    form.reset();
     state.user = await api('/api/auth/me');
     await startApp();
   }

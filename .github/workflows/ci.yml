@@ -38,6 +38,8 @@ jobs:
         run: dotnet test tests/PADO.StudioOps.UnitTests/PADO.StudioOps.UnitTests.csproj --configuration Release --no-build
       - name: Validate repository structure and JavaScript
         run: python scripts/static_check.py
+      - name: Verify asynchronous login form handling
+        run: node scripts/test-login-handler.mjs
       - name: Integration tests with real PostgreSQL
         run: dotnet test tests/PADO.StudioOps.IntegrationTests/PADO.StudioOps.IntegrationTests.csproj --configuration Release --no-build
       - name: Ensure EF Core migrations match the model
